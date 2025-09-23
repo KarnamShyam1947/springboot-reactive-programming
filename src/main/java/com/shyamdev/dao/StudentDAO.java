@@ -1,6 +1,5 @@
 package com.shyamdev.dao;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,6 +51,7 @@ public class StudentDAO {
     }
 
     public Flux<StudentDTO> findAllReactive() {
-        return Flux.fromIterable(students).delayElements(Duration.ofSeconds(1));
+        // return Flux.fromIterable(students).delayElements(Duration.ofSeconds(1));
+        return Flux.fromIterable(students);
     }
 }
