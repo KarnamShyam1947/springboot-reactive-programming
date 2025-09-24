@@ -3,6 +3,8 @@ package com.shyamdev.dao;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.stereotype.Repository;
 
@@ -10,11 +12,13 @@ import com.shyamdev.dto.StudentDTO;
 
 import jakarta.annotation.PostConstruct;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Repository
 public class StudentDAO {
 
     private List<StudentDTO> students = Collections.synchronizedList(new ArrayList<>());
+    private AtomicLong idGenerator = new AtomicLong(100);
 
     @PostConstruct
     public void init() {
@@ -53,5 +57,50 @@ public class StudentDAO {
     public Flux<StudentDTO> findAllReactive() {
         // return Flux.fromIterable(students).delayElements(Duration.ofSeconds(1));
         return Flux.fromIterable(students);
+    }
+    
+    public Mono<StudentDTO> findByIdReactive(Long id) {
+        Optional<StudentDTO> opt = students.stream()
+            .filter(s -> s.getId().equals(id))
+            .findFirst();
+        return Mono.justOrEmpty(opt);
+    }
+
+    public Mono<StudentDTO> saveReactive(StudentDTO student) {
+        if (student.getId() == null) {
+            // Create new
+            long newId = idGenerator.incrementAndGet();
+            student.setId(newId);
+            students.add(student);
+            return Mono.just(student);
+        } else {
+            // Update existing (or upsert)
+            return findByIdReactive(student.getId())
+                .flatMap(existing -> {
+                    synchronized (students) {
+                        students.remove(existing);
+                        students.add(student);
+                    }
+                    return Mono.just(student);
+                })
+                .switchIfEmpty(
+                    // If no existing, treat as new (or reject)
+                    Mono.defer(() -> {
+                        // Optionally: reject or treat as insert
+                        students.add(student);
+                        return Mono.just(student);
+                    })
+                );
+        }
+    }
+
+    public Mono<Void> deleteByIdReactive(Long id) {
+        return findByIdReactive(id)
+            .flatMap(existing -> {
+                synchronized (students) {
+                    students.remove(existing);
+                }
+                return Mono.<Void>empty();
+            });
     }
 }
