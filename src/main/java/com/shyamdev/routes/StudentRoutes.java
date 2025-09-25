@@ -22,6 +22,9 @@ public class StudentRoutes {
                 .route()
                 .GET("/api/v1/route/student", studentHandler::getStudents)
                 .GET("/api/v1/route/student/{id}", studentHandler::getStudent)
+                .POST("/api/v1/route/student", studentHandler::createStudent)
+                .PUT("/api/v1/route/student/{id}", studentHandler::updateStudent)
+                .DELETE("/api/v1/route/student/{id}", studentHandler::deleteStudent)
                 .build();
     }
     

@@ -1,0 +1,34 @@
+@baseUrl=http://localhost:8080/api/v1/route/student
+
+### Get all students (stream)
+GET {{baseUrl}}
+Accept: text/event-stream
+
+### Get student by ID
+GET {{baseUrl}}/1
+Accept: application/json
+
+### Create a new student
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "firstName": "Test",
+  "lastName": "User",
+  "age": 26,
+  "email": "test.user@example.com"
+}
+
+### Update a student (change ID if needed)
+PUT {{baseUrl}}/101
+Content-Type: application/json
+
+{
+  "firstName": "Updated",
+  "lastName": "User",
+  "age": 29,
+  "email": "updated.user@example.com"
+}
+
+### Delete student by ID
+DELETE {{baseUrl}}/101
